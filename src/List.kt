@@ -128,10 +128,10 @@ sealed class List<out E> {
                 if (list.isEmpty()) acc
                 else coFoldRight(list.rest(), f(list.first())(acc), f)
 
-        fun <T> concatViaFoldRight(list1: List<T>, list2: List<T>) =
+        fun <T> concatViaFoldRight(list1: List<T>, list2: List<T>): List<T> =
                 list1.foldRight(list2, { x -> { y -> y.cons(x) } })
 
-        fun <T> concatViaFoldLeft(list1: List<T>, list2: List<T>) =
+        fun <T> concatViaFoldLeft(list1: List<T>, list2: List<T>): List<T> =
                 list1.reverse().foldLeft(list2, { x -> x::cons })
     }
 }
@@ -173,3 +173,8 @@ fun <T> concatViaFoldRight(list1: List<T>, list2: List<T>) =
 
 fun <T> concatViaFoldLeft(list1: List<T>, list2: List<T>) =
         List.concatViaFoldLeft(list1, list2)
+
+fun <E> List<E>.concat(list: List<E>) = List.concatViaFoldLeft(this, list)
+
+fun <T> flatten(list: List<List<T>>): List<T> =
+        list.foldLeft(List()) { list1 -> list1::concat }
