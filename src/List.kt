@@ -181,3 +181,6 @@ fun <T> flatten(list: List<List<T>>): List<T> =
 
 fun x3(list: List<Int>): List<Int> =
         list.reverse().foldLeft(List()) { x -> { y -> x.cons(y * 3) } }
+
+fun doubleToString(list: List<Double>): List<String> =
+        list.reverse().foldLeft(List()) { acc -> { acc.cons(it.toString()) } }
