@@ -1,0 +1,148 @@
+fun inc(i: Int) = i + 1
+
+sealed class List<out E> {
+    abstract fun isEmpty(): Boolean
+
+    abstract fun size(): Int
+
+    abstract fun length(): Int
+
+    abstract fun setHead(x: @UnsafeVariance E): List<E>
+
+    abstract fun first(): E
+
+    abstract fun rest(): List<E>
+
+    fun cons(x: @UnsafeVariance E): List<E> = Cons(x, this)
+
+    fun drop(n: Int): List<E> = Companion.drop(n, this)
+
+    fun dropWhile(list: List<@UnsafeVariance E>, p: (E) -> Boolean): List<E> =
+            Companion.dropWhile(list, p)
+
+    fun reverse(): List<E> = Companion.reverse(invoke(), this)
+
+    fun init(): List<E> = reverse().drop(1).reverse()
+
+    fun <U> foldRight(identity: U, f: (E) -> (U) -> U): U =
+            Companion.foldRight(this, identity, f)
+
+    fun <U> foldLeft(identity: U, f: (U) -> (E) -> U): U =
+            Companion.foldLeft(this, identity, f)
+
+    abstract class Empty<E> : List<E>() {
+        override fun isEmpty(): Boolean = true
+
+        override fun setHead(x: E): List<E> =
+                throw Exception("setHead called on an empty list")
+
+        override fun size(): Int = 0
+
+        override fun length(): Int = 0
+
+        override fun first(): E =
+                throw Exception("first called on an empty list")
+
+        override fun rest(): List<E> = this
+
+        override fun toString(): String = "[NIL]"
+    }
+
+    internal object Nil : Empty<Nothing>()
+
+    internal class Cons<E>(private val head: E,
+                           private val tail: List<E>) : List<E>() {
+
+        override fun isEmpty(): Boolean = false
+
+        override fun size(): Int {
+            tailrec fun sizeIter(count: Int, list: List<E>): Int =
+                    if (list.isEmpty()) count
+                    else sizeIter(count + 1, list.rest())
+
+            return sizeIter(0, this)
+        }
+
+        override fun length(): Int = foldRight(0) { ::inc }
+
+        override fun setHead(x: E): List<E> = this.tail.cons(x)
+
+        override fun toString(): String = "[${toString("", this)}NIL]"
+
+        private tailrec fun toString(acc: String, list: List<E>): String =
+                if (list.isEmpty()) acc
+                else toString("$acc${list.first()}, ", list.rest())
+
+        override fun first(): E = this.head
+        override fun rest(): List<E> = this.tail
+    }
+
+    companion object {
+        operator
+        fun <E> invoke(vararg az: E): List<E> =
+                az.foldRight(Nil) { item: E, acc: List<E> ->
+                    Cons(item, acc)
+                }
+
+        internal tailrec fun <E> drop(i: Int, list: List<E>): List<E> =
+                when {
+                    i <= 0 -> list
+                    list.isEmpty() -> list
+                    else -> drop(i - 1, list.rest())
+                }
+
+        private tailrec fun <E> dropWhile(list: List<E>,
+                                          p: (E) -> Boolean): List<E> =
+                when {
+                    list.isEmpty() -> list
+                    p(list.first()) -> dropWhile(list.rest(), p)
+                    else -> list
+                }
+
+        private tailrec fun <E> reverse(acc: List<E>, list: List<E>): List<E> =
+                if (list.isEmpty()) acc
+                else reverse(acc.cons(list.first()), list.rest())
+
+        fun <T, U> foldRight(list: List<T>, identity: U,
+                             f: (T) -> (U) -> U): U =
+                if (list.isEmpty()) identity
+                else f(list.first())(foldRight(list.rest(), identity, f))
+
+        tailrec fun <E, U> foldLeft(list: List<E>, acc: U,
+                                    f: (U) -> (E) -> U): U =
+                if (list.isEmpty()) acc
+                else foldLeft(list.rest(), f(acc)(list.first()), f)
+    }
+}
+
+fun <E> drop(list: List<E>, n: Int) = List.drop(n, list)
+
+fun sum(list: List<Int>): Int =
+        list.foldRight(0) { x -> { y -> x + y } }
+
+fun product(list: List<Double>): Double =
+        list.foldRight(1.0) { x -> { y -> x * y } }
+
+
+typealias listOfInts = List<Int>
+
+fun concat(list: List<listOfInts>): List<Int> =
+        list.foldRight(List.Nil) { list1: listOfInts ->
+            { list2: listOfInts ->
+                list1.foldRight(list2, { x: Int ->
+                    { y: List<Int> ->
+                        y.cons(x)
+                    }
+                })
+            }
+        }
+
+fun <E> length(list: List<E>) = list.foldLeft(0) { x -> { x + 1 } }
+
+fun sumSafe(list: List<Int>): Int = list.foldLeft(0) { x ->
+    { y -> x + y }
+}
+
+fun productSafe(list: List<Int>): Int = list.foldLeft(1) { x ->
+    { y -> x * y }
+}
