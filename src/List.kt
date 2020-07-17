@@ -52,6 +52,9 @@ sealed class List<out E> {
 
     fun <U> flatMap(f: (E) -> List<U>): List<U> = flatten(map(f))
 
+    fun filterViaFlatMap(p: (E) -> Boolean) =
+            this.flatMap { e -> if (p(e)) List(e) else Nil }
+
     abstract class Empty<E> : List<E>() {
         override fun isEmpty(): Boolean = true
 
