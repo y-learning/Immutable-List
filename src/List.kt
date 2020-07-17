@@ -42,6 +42,14 @@ sealed class List<out E> {
     fun <U> map(f: (E) -> U): List<U> =
             this.coFoldRight(Nil as List<U>) { e -> { it.cons(f(e)) } }
 
+    fun filter(p: (E) -> Boolean): List<E> =
+            this.foldLeft(Nil as List<E>) { acc ->
+                { e ->
+                    if (p(e)) acc.cons(e)
+                    else acc
+                }
+            }.reverse()
+
     abstract class Empty<E> : List<E>() {
         override fun isEmpty(): Boolean = true
 
