@@ -39,6 +39,9 @@ sealed class List<out E> {
     fun <U> coFoldRight(identity: U, f: (E) -> (U) -> U): U =
             Companion.coFoldRight(this.reverse(), identity, f)
 
+    fun <U> map(f: (E) -> U): List<U> =
+            this.coFoldRight(Nil as List<U>) { e -> { it.cons(f(e)) } }
+
     abstract class Empty<E> : List<E>() {
         override fun isEmpty(): Boolean = true
 
