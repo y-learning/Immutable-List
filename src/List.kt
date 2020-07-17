@@ -37,7 +37,7 @@ sealed class List<out E> {
             this.foldLeft(identity, { x -> { y -> f(y)(x) } })
 
     fun <U> coFoldRight(identity: U, f: (E) -> (U) -> U): U =
-            Companion.coFoldRight(this, identity, f)
+            Companion.coFoldRight(this.reverse(), identity, f)
 
     abstract class Empty<E> : List<E>() {
         override fun isEmpty(): Boolean = true
