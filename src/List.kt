@@ -22,6 +22,9 @@ sealed class List<out E> {
 
     fun reverse(): List<E> = Companion.reverse(invoke(), this)
 
+    fun <T> reverse2(): List<E> =
+            this.foldLeft(Nil as List<E>) { acc -> { acc.cons(it) } }
+
     fun init(): List<E> = reverse().drop(1).reverse()
 
     fun <U> foldRight(identity: U, f: (E) -> (U) -> U): U =
@@ -29,6 +32,9 @@ sealed class List<out E> {
 
     fun <U> foldLeft(identity: U, f: (U) -> (E) -> U): U =
             Companion.foldLeft(this, identity, f)
+
+    fun <U> foldRightViaFoldLeft(identity: U, f: (E) -> (U) -> U): U =
+            this.foldLeft(identity, { x -> { y -> f(y)(x) } })
 
     abstract class Empty<E> : List<E>() {
         override fun isEmpty(): Boolean = true
