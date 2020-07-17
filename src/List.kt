@@ -178,3 +178,6 @@ fun <E> List<E>.concat(list: List<E>) = List.concatViaFoldLeft(this, list)
 
 fun <T> flatten(list: List<List<T>>): List<T> =
         list.foldLeft(List()) { list1 -> list1::concat }
+
+fun x3(list: List<Int>): List<Int> =
+        list.reverse().foldLeft(List()) { x -> { y -> x.cons(y * 3) } }
