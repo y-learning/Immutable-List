@@ -128,6 +128,11 @@ sealed class List<out E> {
                 if (list.isEmpty()) acc
                 else coFoldRight(list.rest(), f(list.first())(acc), f)
 
+        fun <T> concatViaFoldRight(list1: List<T>, list2: List<T>) =
+                list1.foldRight(list2, { x -> { y -> y.cons(x) } })
+
+        fun <T> concatViaFoldLeft(list1: List<T>, list2: List<T>) =
+                list1.reverse().foldLeft(list2, { x -> x::cons })
     }
 }
 
@@ -162,3 +167,9 @@ fun sumSafe(list: List<Int>): Int = list.foldLeft(0) { x ->
 fun productSafe(list: List<Int>): Int = list.foldLeft(1) { x ->
     { y -> x * y }
 }
+
+fun <T> concatViaFoldRight(list1: List<T>, list2: List<T>) =
+        List.concatViaFoldRight(list1, list2)
+
+fun <T> concatViaFoldLeft(list1: List<T>, list2: List<T>) =
+        List.concatViaFoldLeft(list1, list2)
