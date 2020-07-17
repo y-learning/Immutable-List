@@ -50,6 +50,8 @@ sealed class List<out E> {
                 }
             }.reverse()
 
+    fun <U> flatMap(f: (E) -> List<U>): List<U> = flatten(map(f))
+
     abstract class Empty<E> : List<E>() {
         override fun isEmpty(): Boolean = true
 
